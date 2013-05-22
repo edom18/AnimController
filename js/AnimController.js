@@ -1,4 +1,4 @@
-(function (win, doc, Class) {
+(function (win, doc, Class, exports) {
 
     'use strict';
 
@@ -16,16 +16,19 @@
             this._queue = [];
             this._frame = 0;
             this._prevTime = 0;
+            this._stopped = true;
             this.FPS = attr.FPS || this.FPS;
         },
         add: function (data) {
             this._queue.push(new Anim(data));
         },
         start: function () {
+            this._stopped = false;
             this._prevTime = +new Date();
             this._loop();
         },
         stop: function () {
+            this._stopped = true;
             clearTimeout(this._timerId);
         },
         length: function () {
@@ -70,6 +73,7 @@
             this._clearnup();
 
             if (this.length() === 0) {
+                this.stop();
                 this.trigger('done');
                 return;
             }
@@ -109,23 +113,5 @@
         }
     });
 
-
-    //------------------------------------------------------------
-
-    //for test
-
-    win.actrl = new AnimController();
-    actrl.add({
-        delay: 50,
-        duration: 1000,
-        func: function (t) {
-            console.log(t);
-        }
-    });
-
-    actrl.start();
-    actrl.on('done', function () {
-        alert('all things has done.');
-    });
-
-}(window, window.document, window.Class));
+    exports.AnimController = AnimController;
+}(window, window.document, window.Class, window));

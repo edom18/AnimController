@@ -1,7 +1,10 @@
-$color: green;
+@imoprt "compass/reset";
 
-body {
-    div {
-        color: $color;
-    }
+#test {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 150px;
+    height: 150px;
+    border: solid 1px #333;
 }
