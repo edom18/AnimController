@@ -197,12 +197,12 @@
         init: function (attr) {
             attr || (attr = {});
 
-            this.func = attr.func || function () {};
+            this.func  = attr.func;
             this.delay = attr.delay || 0;
             this.duration = attr.duration || 1;
         },
         dispose: function () {
-            this.func = null;
+            this.func  = null;
             this.delay = null;
             this.duration = null;
         },
@@ -219,5 +219,10 @@
         }
     });
 
+    /* -----------------------------------------------------
+        EXPORTS
+    -------------------------------------------------------- */
+    exports.Anim = Anim;
     exports.AnimController = AnimController;
+
 }(window, window.document, window.Class, window));
