@@ -2,6 +2,59 @@
 
     'use strict';
 
+    var AnimRunner = Class.extend({
+        init: function (ctrl) {
+            this.ctrl = ctrl;
+        },
+        run: function () {}
+    });
+
+    var ParallelAnimRunner = AnimRunner.extend({
+        run: function () {
+            var frame = this.ctrl.getFrame();
+            frame++;
+            this.ctrl.setFrame(frame);
+            var t = frame * this.ctrl.FPS;
+            var queue = this.ctrl.getQueue();
+
+            for (var i = 0, l = queue.length; i < l; i++) {
+                var duration = queue[i].duration;
+                var delay = queue[i].delay;
+                var past = t - delay;
+
+                if (delay > t) {
+                    continue;
+                }
+
+                queue[i].run(past / duration);
+            }
+        }
+    });
+
+    var SerialAnimRunner = AnimRunner.extend({
+        run: function () {
+            var frame = this.ctrl.getFrame();
+            frame++;
+            this.ctrl.setFrame(frame);
+            var t = frame * this.ctrl.FPS;
+            var queue = this.ctrl.getQueue(0);
+
+            var duration = queue.duration;
+            var delay = queue.delay;
+            var past = t - delay;
+
+            if (delay > t) {
+                return;
+            }
+
+            queue.run(past / duration);
+
+            if (queue.isTerminal()) {
+                this.ctrl.setFrame(0);
+            }
+        }
+    });
+
     /**
      * Animation contoroller class
      * @constructor
@@ -18,6 +71,26 @@
             this._prevTime = 0;
             this._stopped = true;
             this.FPS = attr.FPS || this.FPS;
+            this.runner = attr.runner ? new attr.runner(this) : new ParallelAnimRunner(this);
+
+            if (attr.data) {
+                this.add(attr.data);
+            }
+        },
+        getFrame: function () {
+            return this._frame;
+        },
+        setFrame: function (frame) {
+            this._frame = frame;
+        },
+        getQueue: function (index) {
+            if (typeof index !== 'undefined') {
+                return this._queue[index];
+            }
+            return this._queue.slice();
+        },
+        setQueue: function (index, queue) {
+            this._queue[index] = queue;
         },
 
         /**
@@ -35,35 +108,28 @@
                 d = (data[i] instanceof Anim) ? data[i] : new Anim(data[i]);
                 this._queue.push(d);
             }
+
+            return this;
         },
         start: function () {
             this._stopped = false;
             this._prevTime = +new Date();
             this._loop();
+
+            return this;
         },
         stop: function () {
             this._stopped = true;
             clearTimeout(this._timerId);
+
+            return this;
         },
         length: function () {
             return this._queue.length;
         },
         run: function () {
-            this._frame++;
-            var t = this._frame * this.FPS;
-            var queue = this._queue;
-
-            for (var i = 0, l = queue.length; i < l; i++) {
-                var duration = queue[i].duration;
-                var delay = queue[i].delay;
-                var past = t - delay;
-
-                if (delay > t) {
-                    continue;
-                }
-
-                queue[i].run(past / duration);
-            }
+            this.runner.run();
+            return this;
         },
         _clearnup: function () {
             var queue = this._queue;
@@ -95,6 +161,24 @@
             this._timerId = setTimeout(this._loop.bind(this), this.FPS);
         }
     });
+
+    AnimController.parallel = function (data) {
+        var actrl = new AnimController({
+            runner: ParallelAnimRunner,
+            data: data
+        });
+
+        return actrl;
+    };
+
+    AnimController.serial = function (data) {
+        var actrl = new AnimController({
+            runner: SerialAnimRunner,
+            data: data
+        });
+
+        return actrl;
+    };
 
     /**
      * Anim class

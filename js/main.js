@@ -4,8 +4,7 @@
 
     var el = doc.querySelector('#test');
 
-    win.actrl = new AnimController();
-    actrl.parallel([
+    win.actrl = AnimController.serial([
         {
             delay: 50,
             duration: 1000,
@@ -22,9 +21,9 @@
                 el.style.top = val + 'px';
             }
         }
-    ]);
+    ]).start();
 
-    actrl.start();
+//    actrl.start();
     actrl.on('done', function () {
         console.log('all things has done.');
     });
