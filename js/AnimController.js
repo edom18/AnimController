@@ -162,6 +162,10 @@
         }
     });
 
+    /**
+     * Create animation controller as parallel.
+     * @param {Object} data initialize data.
+     */
     AnimController.parallel = function (data) {
         var actrl = new AnimController({
             runner: ParallelAnimRunner,
@@ -171,6 +175,10 @@
         return actrl;
     };
 
+    /**
+     * Create animation controller as serial.
+     * @param {Object} data initialize data.
+     */
     AnimController.serial = function (data) {
         var actrl = new AnimController({
             runner: SerialAnimRunner,
