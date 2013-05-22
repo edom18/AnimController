@@ -4,7 +4,7 @@
 
     var el = doc.querySelector('#test');
 
-    win.actrl = AnimController.serial([
+    win.actrl = AnimController.loop([
         {
             delay: 50,
             duration: 1000,
