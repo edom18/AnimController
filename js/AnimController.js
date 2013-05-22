@@ -74,6 +74,66 @@
     });
 
     /**
+     * Loop runner class.
+     * @constructor
+     */
+    var LoopAnimRunner = AnimRunner.extend({
+        _getNextQueue: function () {
+            var queue = this.ctrl.getQueue();
+
+            for (var i = 0, l = queue.length; i < l; i++) {
+                if (!queue[i].isTerminal()) {
+                    return queue[i];
+                }
+            }
+
+            return null;
+        },
+        _resetQueue: function () {
+            var queue = this.ctrl.getQueue();
+
+            for (var i = 0, l = queue.length; i < l; i++) {
+                queue[i].reset();
+            }
+
+            this.ctrl.setFrame(0);
+        },
+        run: function () {
+            var frame,
+                time,
+                queue,
+                duration,
+                delay,
+                past;
+
+            queue = this._getNextQueue();
+
+            if (queue === null) {
+                this._resetQueue();
+                return;
+            }
+
+            frame = this.ctrl.getFrame() + 1;
+            time  = frame * this.ctrl.FPS;
+            this.ctrl.setFrame(frame);
+
+            duration = queue.duration;
+            delay = queue.delay;
+            past  = time - delay;
+
+            if (delay > time) {
+                return;
+            }
+
+            queue.run(past / duration);
+
+            if (queue.isTerminal()) {
+                this.ctrl.setFrame(0);
+            }
+        }
+    });
+
+    /**
      * Animation contoroller class
      * @constructor
      * @param {Object} attr config object.
@@ -89,6 +149,7 @@
             this._prevTime = 0;
             this._stopped = true;
             this.FPS = attr.FPS || this.FPS;
+            this._unneeded = attr.unneeded;
             this.runner = attr.runner ? new attr.runner(this) : new ParallelAnimRunner(this);
 
             if (attr.data) {
@@ -129,6 +190,10 @@
 
             return this;
         },
+
+        /**
+         * Start an animation.
+         */
         start: function () {
             this._stopped = false;
             this._prevTime = +new Date();
@@ -136,20 +201,41 @@
 
             return this;
         },
+
+        /**
+         * Stop an animation.
+         */
         stop: function () {
             this._stopped = true;
             clearTimeout(this._timerId);
 
             return this;
         },
+
+        /**
+         * Return length of queue.
+         */
         length: function () {
             return this._queue.length;
         },
+
+        /**
+         * Proceed a frame.
+         */
         run: function () {
             this.runner.run();
             return this;
         },
+
+        /**
+         * Clearn up a queue.
+         */
         _clearnup: function () {
+
+            if (this._unneeded) {
+                return;
+            }
+
             var queue = this._queue;
             var _newArr = [];
 
@@ -165,6 +251,10 @@
 
             this._queue = _newArr;
         },
+
+        /**
+         * This method gives a loop of animation.
+         */
         _loop: function () {
             this.run();
 
@@ -207,6 +297,22 @@
     };
 
     /**
+     * Create animation controller as loop.
+     * @param {Object} data initialize data.
+     */
+    AnimController.loop = function (data) {
+        var actrl = new AnimController({
+            unneeded: true,
+            runner: LoopAnimRunner,
+            data: data
+        });
+
+        return actrl;
+    };
+
+    // -------------------------------------------------------------------
+
+    /**
      * Anim class
      * @constructor
      * @param {Object} attr config object.
@@ -234,6 +340,9 @@
         },
         isTerminal: function () {
             return this._terminated;
+        },
+        reset: function () {
+            this._terminated = false;
         }
     });
 
