@@ -19,8 +19,22 @@
             this._stopped = true;
             this.FPS = attr.FPS || this.FPS;
         },
+
+        /**
+         * Add anim(s) data.
+         * @param {Object|Array.<Object|Anim>} data animation object.
+         */
         add: function (data) {
-            this._queue.push(new Anim(data));
+            var d = null;
+
+            if ({}.toString.call(data) !== '[object Array]') {
+                data = [data];
+            }
+
+            for (var i = 0, l = data.length; i < l; i++) {
+                d = (data[i] instanceof Anim) ? data[i] : new Anim(data[i]);
+                this._queue.push(d);
+            }
         },
         start: function () {
             this._stopped = false;
