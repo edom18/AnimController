@@ -9,18 +9,26 @@
         run: function () {}
     });
 
+    /**
+     * Parallel runner class.
+     * @constructor
+     */
     var ParallelAnimRunner = AnimRunner.extend({
         run: function () {
-            var frame = this.ctrl.getFrame();
-            frame++;
+            var frame = this.ctrl.getFrame() + 1,
+                t = frame * this.ctrl.FPS,
+                queue = this.ctrl.getQueue(),
+
+                duration,
+                delay,
+                past;
+
             this.ctrl.setFrame(frame);
-            var t = frame * this.ctrl.FPS;
-            var queue = this.ctrl.getQueue();
 
             for (var i = 0, l = queue.length; i < l; i++) {
-                var duration = queue[i].duration;
-                var delay = queue[i].delay;
-                var past = t - delay;
+                duration = queue[i].duration;
+                delay = queue[i].delay;
+                past = t - delay;
 
                 if (delay > t) {
                     continue;
@@ -31,17 +39,27 @@
         }
     });
 
+    /**
+     * Serial runner class.
+     * @constructor
+     */
     var SerialAnimRunner = AnimRunner.extend({
         run: function () {
-            var frame = this.ctrl.getFrame();
-            frame++;
-            this.ctrl.setFrame(frame);
-            var t = frame * this.ctrl.FPS;
-            var queue = this.ctrl.getQueue(0);
+            var frame,
+                t,
+                queue,
+                duration,
+                delay,
+                past;
 
-            var duration = queue.duration;
-            var delay = queue.delay;
-            var past = t - delay;
+            frame = this.ctrl.getFrame() + 1;
+            this.ctrl.setFrame(frame);
+            t = frame * this.ctrl.FPS;
+            queue = this.ctrl.getQueue(0);
+
+            duration = queue.duration;
+            delay = queue.delay;
+            past = t - delay;
 
             if (delay > t) {
                 return;
