@@ -16,7 +16,7 @@
     var ParallelAnimRunner = AnimRunner.extend({
         run: function () {
             var frame = this.ctrl.getFrame() + 1,
-                t = frame * this.ctrl.FPS,
+                time  = frame * this.ctrl.FPS,
                 queue = this.ctrl.getQueue(),
 
                 duration,
@@ -28,9 +28,9 @@
             for (var i = 0, l = queue.length; i < l; i++) {
                 duration = queue[i].duration;
                 delay = queue[i].delay;
-                past = t - delay;
+                past = time - delay;
 
-                if (delay > t) {
+                if (delay > time) {
                     continue;
                 }
 
@@ -46,22 +46,22 @@
     var SerialAnimRunner = AnimRunner.extend({
         run: function () {
             var frame,
-                t,
+                time,
                 queue,
                 duration,
                 delay,
                 past;
 
             frame = this.ctrl.getFrame() + 1;
-            this.ctrl.setFrame(frame);
-            t = frame * this.ctrl.FPS;
             queue = this.ctrl.getQueue(0);
+            time  = frame * this.ctrl.FPS;
+            this.ctrl.setFrame(frame);
 
             duration = queue.duration;
             delay = queue.delay;
-            past = t - delay;
+            past  = time - delay;
 
-            if (delay > t) {
+            if (delay > time) {
                 return;
             }
 
