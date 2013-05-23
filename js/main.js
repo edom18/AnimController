@@ -14,7 +14,7 @@
             }
         },
         {
-            delay: 500,
+            delay: '-=1000',
             duration: 1000,
             func: function (t) {
                 var val = ease(0, 300, t);
