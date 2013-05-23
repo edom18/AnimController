@@ -2,7 +2,14 @@
 
     'use strict';
 
+    /**
+     * Runner base class.
+     * @constructor
+     */
     var AnimRunner = Class.extend({
+        /**
+         * @param {AnimController} ctrl will use to access the controller.
+         */
         init: function (ctrl) {
             this.ctrl = ctrl;
         },
@@ -133,6 +140,8 @@
         }
     });
 
+    // ----------------------------------------------------------------------------------------
+
     /**
      * Animation contoroller class
      * @constructor
@@ -140,6 +149,10 @@
      */
     var AnimController = EventDispatcher.extend({
         FPS: 16,
+
+        /**
+         * @param {Object} config object.
+         */
         init: function (attr) {
 
             attr || (attr = {});
@@ -149,7 +162,7 @@
             this._prevTime = 0;
             this._stopped = true;
             this.FPS = attr.FPS || this.FPS;
-            this._unneeded = attr.unneeded;
+            this._unneeded  = attr.unneeded;
             this.runner = attr.runner ? new attr.runner(this) : new ParallelAnimRunner(this);
 
             if (attr.data) {
@@ -323,7 +336,8 @@
 
             this.func  = attr.func;
             this.delay = attr.delay || 0;
-            this.duration = attr.duration || 1;
+            this.duration  = attr.duration || 1;
+            this.attribute = attr.attribute;
         },
         dispose: function () {
             this.func  = null;
