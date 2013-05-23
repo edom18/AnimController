@@ -23,7 +23,6 @@
     var ParallelAnimRunner = AnimRunner.extend({
         run: function () {
             var frame = this.ctrl.getFrame() + 1,
-                time  = frame * this.ctrl.FPS,
                 queue = this.ctrl.getQueue(),
 
                 duration,
@@ -35,9 +34,9 @@
             for (var i = 0, l = queue.length; i < l; i++) {
                 duration = queue[i].duration;
                 delay = queue[i].delay;
-                past = time - delay;
+                past = frame - delay;
 
-                if (delay > time) {
+                if (delay > frame) {
                     continue;
                 }
 
@@ -53,7 +52,6 @@
     var SerialAnimRunner = AnimRunner.extend({
         run: function () {
             var frame,
-                time,
                 queue,
                 duration,
                 delay,
@@ -61,14 +59,13 @@
 
             frame = this.ctrl.getFrame() + 1;
             queue = this.ctrl.getQueue(0);
-            time  = frame * this.ctrl.FPS;
             this.ctrl.setFrame(frame);
 
             duration = queue.duration;
             delay = queue.delay;
-            past  = time - delay;
+            past  = frame - delay;
 
-            if (delay > time) {
+            if (delay > frame) {
                 return;
             }
 
@@ -107,7 +104,6 @@
         },
         run: function () {
             var frame,
-                time,
                 queue,
                 duration,
                 delay,
@@ -121,14 +117,13 @@
             }
 
             frame = this.ctrl.getFrame() + 1;
-            time  = frame * this.ctrl.FPS;
             this.ctrl.setFrame(frame);
 
             duration = queue.duration;
             delay = queue.delay;
-            past  = time - delay;
+            past  = frame - delay;
 
-            if (delay > time) {
+            if (delay > frame) {
                 return;
             }
 
@@ -250,42 +245,57 @@
             var queue = this._queue,
                 prevQueue,
                 curQueue,
-                prevTime = 0;
+                prevTime = 0,
+
+                FPS = this.FPS;
+
+            function _parseNum(str) {
+                return +(str.slice(2));
+            }
+            function _convart(num) {
+                return Math.floor(num / FPS);
+            }
 
             for (var i = 0, l = queue.length; i < l; i++) {
                 prevQueue = queue[i - 1];
                 curQueue  = queue[i];
 
+                //convart to as frame.
+                curQueue.duration = _convart(curQueue.duration);
+
                 if (!needParse) {
                     if ({}.toString.call(curQueue.delay) === '[object String]') {
-                        curQueue.delay = +(curQueue.delay.slice(2));
+                        curQueue.delay    = _convart(_parseNum(curQueue.delay));
                     }
                     continue;
                 }
 
                 if (prevQueue) {
-                    prevTime = prevQueue.delay + prevQueue.duration;               
+                    prevTime = prevQueue.delay + prevQueue.duration;
                 }
 
-                if ({}.toString.call(curQueue.delay) === '[object String]') {
-                    var type = curQueue.delay.match(/^[+-]=/);
+                if ({}.toString.call(curQueue.delay) !== '[object String]') {
+                    curQueue.delay = _convart(curQueue.delay);
+                    continue;
+                }
 
-                    if (type === null) {
-                        curQueue.delay = +curQueue.delay;
-                        continue;
-                    }
+                var type = curQueue.delay.match(/^[+-]=/);
 
-                    curQueue.delay = +(curQueue.delay.slice(2));
+                if (type === null) {
+                    curQueue.delay = _convart(+curQueue.delay);
+                    continue;
+                }
 
-                    if (type[0] === '-=') {
-                        curQueue.delay *= -1;
-                    }
+                curQueue.delay = _convart(_parseNum(curQueue.delay));
 
-                    curQueue.delay = prevTime + curQueue.delay;
+                if (type[0] === '-=') {
+                    curQueue.delay *= -1;
+                }
 
-                    if (curQueue.delay < 0) {
-                        curQueue.delay = 0;
-                    }
+                curQueue.delay = prevTime + curQueue.delay;
+
+                if (curQueue.delay < 0) {
+                    curQueue.delay = 0;
                 }
             }
         },
