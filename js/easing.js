@@ -4,6 +4,13 @@
         cos = Math.cos,
         sin = Math.sin;
 
+    function ease(a, b, x) {
+        var c = a - b;
+        var t = (x - 0.5) * 2;
+
+        return b * (1 - t * t) + a;
+    }
+
     function easing(a, b, x) {
         var f = (1.0 - cos(x * PI)) * 0.5;
         return a * (1.0 - f) + b * f;
