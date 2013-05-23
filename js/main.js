@@ -9,7 +9,7 @@
             delay: 50,
             duration: 1000,
             func: function (t) {
-                var val = easing(0, 500, t);
+                var val = ease(0, 500, t);
                 el.style.left = val + 'px';
             }
         },
@@ -17,7 +17,7 @@
             delay: 500,
             duration: 1000,
             func: function (t) {
-                var val = easing(0, 300, t);
+                var val = ease(0, 300, t);
                 el.style.top = val + 'px';
             }
         }
