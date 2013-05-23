@@ -201,6 +201,8 @@
                 this._queue.push(d);
             }
 
+            this._compile(this.runner instanceof ParallelAnimRunner);
+
             return this;
         },
 
@@ -238,6 +240,54 @@
         run: function () {
             this.runner.run();
             return this;
+        },
+
+        /**
+         * Compile queue delays.
+         */
+        _compile: function (needParse) {
+
+            var queue = this._queue,
+                prevQueue,
+                curQueue,
+                prevTime = 0;
+
+            for (var i = 0, l = queue.length; i < l; i++) {
+                prevQueue = queue[i - 1];
+                curQueue  = queue[i];
+
+                if (!needParse) {
+                    if ({}.toString.call(curQueue.delay) === '[object String]') {
+                        curQueue.delay = +(curQueue.delay.slice(2));
+                    }
+                    continue;
+                }
+
+                if (prevQueue) {
+                    prevTime = prevQueue.delay + prevQueue.duration;               
+                }
+
+                if ({}.toString.call(curQueue.delay) === '[object String]') {
+                    var type = curQueue.delay.match(/^[+-]=/);
+
+                    if (type === null) {
+                        curQueue.delay = +curQueue.delay;
+                        continue;
+                    }
+
+                    curQueue.delay = +(curQueue.delay.slice(2));
+
+                    if (type[0] === '-=') {
+                        curQueue.delay *= -1;
+                    }
+
+                    curQueue.delay = prevTime + curQueue.delay;
+
+                    if (curQueue.delay < 0) {
+                        curQueue.delay = 0;
+                    }
+                }
+            }
         },
 
         /**
