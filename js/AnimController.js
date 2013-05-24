@@ -265,7 +265,10 @@
 
                 if (!needParse) {
                     if ({}.toString.call(curQueue.delay) === '[object String]') {
-                        curQueue.delay    = _convart(_parseNum(curQueue.delay));
+                        curQueue.delay = _convart(_parseNum(curQueue.delay));
+                    }
+                    else {
+                        curQueue.delay = _convart(curQueue.delay);
                     }
                     continue;
                 }
